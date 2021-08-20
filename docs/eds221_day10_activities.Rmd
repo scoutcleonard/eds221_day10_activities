@@ -1,0 +1,81 @@
+---
+title: "Day 10 Activities"
+author: "Scout Leonard"
+date: "8/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggbeeswarm)
+library(lubridate)
+```
+
+
+```{r}
+ice_duration_data <- read_csv(here::here("data", "ntl33_v7.csv"), na = c("-999"))
+meteorological_data <- read_csv(here::here("data", "ntl20_v6.csv"))
+```
+```{r}
+ggplot(data = ice_duration_data, aes(x = lakeid, y = ice_duration)) +
+  geom_boxplot() +
+  geom_beeswarm(color = "purple", alpha = 0.3)
+```
+```{r}
+ice_subset <- ice_duration_data %>% 
+  group_by(year4) %>% 
+  summarize(mean_duration = mean(ice_duration, na.rm = TRUE))
+  
+```
+
+```{r}
+meteorological_months <- meteorological_data %>% 
+  mutate(date = lubridate::ymd(sampledate)) %>% 
+  mutate(month = month(sampledate))
+
+meteorological_subset <- meteorological_months %>% 
+  filter(month == c(2, 12, 1))
+```
+
+```{r}
+winter_subset <- meteorological_months %>% 
+  filter(month == c(12, 1, 2)) %>% 
+  group_by(year4) %>% 
+  summarize(mean = mean(ave_air_temp_adjusted))
+
+ggplot(data = winter_subset, aes(x = year4, y = mean)) +
+  geom_line(color = "cyan4")
+```
+The above line graph shows the average winter temperatures in the Madison Lakes area. We can see a gradual rise in mean air temperatures over the last century from this data. 
+
+```{r}
+temp_ice_join <- winter_subset %>%
+  full_join(ice_subset)
+  
+```
+
+```{r}
+ggplot(data = temp_ice_join, aes(x = mean, y = mean_duration)) +
+  geom_point() +
+  geom_smooth()
+```
+
+```{r}
+ice_off_data <- ice_duration_data %>% 
+  mutate(ice_off_date = lubridate::ymd(ice_off)) %>% 
+  mutate(day_of_yr_ice_off = yday(ice_off_date))
+
+
+
+ice_off_subset <- ice_off_data %>% 
+  group_by(year4) %>% 
+  summarize(avg_ice_off = mean(day_of_yr_ice_off))
+
+ggplot(data = ice_off_subset, aes(x = year4, y = avg_ice_off)) +
+  geom_point(color = "navy")
+```
+
