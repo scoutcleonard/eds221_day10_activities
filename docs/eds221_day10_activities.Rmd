@@ -30,38 +30,62 @@ ggplot(data = ice_duration_data, aes(x = lakeid, y = ice_duration)) +
        x = expression(atop(bold("Lake"), italic("Mendota, Monona, or Wingra"))),
        y = expression(atop(bold("Ice Duration"), italic("# of Days Frozen")))) +
   theme(axis.title.y = element_text(angle = 0),
-        plot.title = element_text(size = 20))
+        plot.title = element_text(size = 20),
+        panel.background = element_blank())
 ```
 
 
 
 I used a boxplot over a beeswarm plot. This means that the outliers on the bowpltos were doubly represented as points on my graph. I was able to remove the outliers from the bowplot by specifying the outlier.alpha as 0 like this `geom_boxplot(outlier.alpha = 0)`. 
 
+*Find the mean ice cover duration in Madison Lake Area by year (i.e., you’ll only be grouping by the year variable here). Understanding check: what are you finding the mean of here? Why are there multiple observations for each year?)*
+
 ```{r}
 ice_subset <- ice_duration_data %>% 
   group_by(year4) %>% 
   summarize(mean_duration = mean(ice_duration, na.rm = TRUE))
-  
+
 ```
+
+There are multiple observations for each year because observations are from each of the three lakes. Here I found the mean ice duration of the three lakes for each year in the dataset.
+
+*Create an exploratory visualization of mean ice cover duration by year for the Madison Lake Area. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.*
+
+```{r}
+ggplot(ice_subset, aes(x = year4, y = mean_duration)) +
+  geom_point(color = "cyan3", alpha = 0.7)
+```
+The overall trend observed is that duration of ice on lakes has gradually decreased in the last century. 
+
+*Find the mean air temperature (using the daily average air temperature - adjusted) in Madison Lake Area by year using only observations from winter months (December, January, February)*
 
 ```{r}
 meteorological_months <- meteorological_data %>% 
   mutate(date = lubridate::ymd(sampledate)) %>% 
   mutate(month = month(sampledate))
 
-meteorological_subset <- meteorological_months %>% 
-  filter(month == c(2, 12, 1))
-```
-
-```{r}
 winter_subset <- meteorological_months %>% 
   filter(month == c(12, 1, 2)) %>% 
   group_by(year4) %>% 
   summarize(mean = mean(ave_air_temp_adjusted))
 
-ggplot(data = winter_subset, aes(x = year4, y = mean)) +
-  geom_line(color = "cyan4")
 ```
+*Create an exploratory visualization of mean winter temperatures for the Madison Lake Area. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.*
+
+```{r}
+ggplot(data = winter_subset, aes(x = year4, y = mean)) +
+  geom_point(color = "dodgerblue4") +
+  theme(panel.background = element_blank(),
+        panel.grid = element_line(color = "lightgrey"),
+        axis.title.y = element_text(angle = 0, size = 8),
+        axis.title.x = element_text(size = 8),
+        plot.title = element_text(size = 12)) +
+  labs(title = "Mean Winter Temperatures for the Madison Lakes Area",
+       x = "Year",
+       y = "Mean Winter Temperature (Degrees C)")
+```
+
+
 The above line graph shows the average winter temperatures in the Madison Lakes area. We can see a gradual rise in mean air temperatures over the last century from this data. 
 
 ```{r}
