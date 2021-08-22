@@ -18,13 +18,25 @@ library(lubridate)
 
 ```{r}
 ice_duration_data <- read_csv(here::here("data", "ntl33_v7.csv"), na = c("-999"))
-meteorological_data <- read_csv(here::here("data", "ntl20_v6.csv"))
+meteorological_data <- read_csv(here::here("data", "ntl20_v6.csv"), na = c("-999"))
 ```
+*Create a visualization that compares ice duration across different lakes in the Madison Lake Area. Include both the actual ice duration values and some representation of summary statistics for each lake. Careful if you use a boxplot over a jitter or beeswarm - what values might be doubly represented? Can you find an argument that would help you remove those from the boxplot? *
+
 ```{r}
 ggplot(data = ice_duration_data, aes(x = lakeid, y = ice_duration)) +
-  geom_boxplot() +
-  geom_beeswarm(color = "purple", alpha = 0.3)
+  geom_boxplot(outlier.alpha = 0) +
+  geom_beeswarm(color = "purple", alpha = 0.3) +
+  labs(title = "Ice Duration by Lake in Madison Lakes Area",
+       x = expression(atop(bold("Lake"), italic("Mendota, Monona, or Wingra"))),
+       y = expression(atop(bold("Ice Duration"), italic("# of Days Frozen")))) +
+  theme(axis.title.y = element_text(angle = 0),
+        plot.title = element_text(size = 20))
 ```
+
+
+
+I used a boxplot over a beeswarm plot. This means that the outliers on the bowpltos were doubly represented as points on my graph. I was able to remove the outliers from the bowplot by specifying the outlier.alpha as 0 like this `geom_boxplot(outlier.alpha = 0)`. 
+
 ```{r}
 ice_subset <- ice_duration_data %>% 
   group_by(year4) %>% 
